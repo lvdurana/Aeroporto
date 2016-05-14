@@ -1,0 +1,17 @@
+# depslib dependency file v1.0
+1463161561 source:c:\users\levi\documents\projects\c\aeroporto\aero_main.c
+	"f_base.h"
+
+1463161497 c:\users\levi\documents\projects\c\aeroporto\f_base.h
+	<tchar.h>
+	<windows.h>
+	<stdio.h>
+	<math.h>
+	<time.h>
+	"resource.h"
+
+1462816811 c:\users\levi\documents\projects\c\aeroporto\resource.h
+
+1463161703 source:c:\users\levi\documents\projects\c\aeroporto\interface_aero.c
+	"f_base.h"
+
