@@ -1,3 +1,11 @@
-#define LR_BMP_TILES 9001
-#define LR_BMP_RATO 9002
+#define AP_BMP_FUNDO 9001
+#define AP_BMP_CAIXA 9002
+#define AP_BMP_AVIAO 9003
 
+#define ADD_BUTTON  1
+#define NAME_BOX  4006
+#define COD_BOX  4007
+#define PLACE_BOX  4008
+#define TIME_BOX  4009
+#define PASS_BOX  4010
+#define TEXT_NUM_DE_AVIOES  4002

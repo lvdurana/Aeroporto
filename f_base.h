@@ -12,22 +12,58 @@
 
 #include "resource.h"
 
+//Tamanho de cada segmento do bitmap de caixa(3x3)
+#define BOX_WIDTH 16
+#define BOX_HEIGHT 16
+
+//Tamanho da janela
 #define WINDOW_PADDING_X 7
 #define WINDOW_PADDING_Y 28
 
-#define WINDOW_WIDTH (200 + WINDOW_PADDING_X)
-#define WINDOW_HEIGHT (200 + WINDOW_PADDING_Y)
+#define CANVAS_WIDTH 480
+#define CANVAS_HEIGHT 360
+#define WINDOW_WIDTH (CANVAS_WIDTH + WINDOW_PADDING_X)
+#define WINDOW_HEIGHT (CANVAS_HEIGHT + WINDOW_PADDING_Y)
+
+
+//Bitmaps
+#define BMP_FUNDO 0
+#define BMP_CAIXA 1
+#define BMP_AVIAO 2
+#define BMP_AVIAO_MASK 3
+#define NUM_BITMAPS 4
+
+//Sprites
+#define SPRITE_AV_WIDTH 32
+#define SPRITE_AV_HEIGHT 32
+
+//Caixas da tela
+#define TEXT_SIZE_A 14
+#define TEXT_SIZE_B 12
+
+#define AP_LIST_WIDTH 8
+#define AP_LIST_HEIGHT 6
+
+#define AP_LIST_A_X (CANVAS_WIDTH - BOX_WIDTH*AP_LIST_WIDTH)
+#define AP_LIST_A_Y 0
+#define AP_LIST_B_X 0
+#define AP_LIST_B_Y (CANVAS_HEIGHT - BOX_HEIGHT*AP_LIST_HEIGHT)
+
+#define BOX_X_PADDING_1 4
+#define BOX_Y_PADDING_1 4
+#define BOX_Y_PADDING_2 8
+
+#define TEXT_SIZE_LIMIT_1 (BOX_WIDTH*AP_LIST_WIDTH - BOX_X_PADDING_1*3 - SPRITE_AV_WIDTH)
+#define TEXT_SIZE_LIMIT_2 (BOX_WIDTH*AP_LIST_WIDTH - BOX_X_PADDING_1*2)
 
 
 //Botões
-#define NUM_BUTTONS 6
 
-#define PAUSE_BUTTON 0
-#define SPEED_LOW_BUTTON 1
-#define SPEED_MID_BUTTON 2
-#define SPEED_HIGH_BUTTON 3
-#define OPTIONS_BUTTON 4
-#define RESET_BUTTON 5
+#define BT_PERMITIR_POUSO 0
+#define BT_LISTA_POUSOS 1
+#define BT_PERMITIR_DECOLAGEM 2
+#define BT_LISTA_DECOLAGENS 3
+#define NUM_BUTTONS 4
 
 
 #define SPEED_BUTTONS_WIDTH 48
@@ -60,16 +96,12 @@
 
 #define FRAME_DURATION(x) (8/x)
 
-#define MAX_FPS 30
+#define MAX_FPS 15
 #define FPS_TIMER 0x0001
 
 
 
-typedef struct STACK
-{
-    int dado;
-    struct STACK *prox;
-} stack;
+
 
 
 typedef struct frame{
@@ -87,7 +119,6 @@ typedef struct cha{
     int speed; //pixels percorridos por frame;
     int frame; // frame da animação do sprite
     int frame_duration; //numero de frames restantes até a alteração do frame
-    stack *pilha;
     BOOL active;
 
 } character;
@@ -102,4 +133,9 @@ typedef struct avi{
 
 }aviao;
 
+typedef struct FILA
+{
+    aviao *dado;
+    struct FILA *prox;
+} fila;
 

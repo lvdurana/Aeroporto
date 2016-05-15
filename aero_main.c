@@ -8,8 +8,10 @@ HWND main_window;
 frame_count FPS_count;
 
 //Elementos da interface
-HBITMAP map_tiles, sprite, sprite_mask;
+HBITMAP bitmaps[NUM_BITMAPS];
 HWND buttons[NUM_BUTTONS];
+
+fila *fila_decolagem, *fila_pouso;
 
 
 
@@ -77,15 +79,28 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     {
         case WM_CREATE:
             {
-                map_tiles= LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(LR_BMP_TILES));
-                sprite = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(LR_BMP_RATO));
-                sprite_mask = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(LR_BMP_RATO));
-                CreateBitmapMask(sprite_mask,RGB(255,255,255));
+                bitmaps[BMP_FUNDO] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(AP_BMP_FUNDO));
+                bitmaps[BMP_CAIXA] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(AP_BMP_CAIXA));
+                bitmaps[BMP_AVIAO] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(AP_BMP_AVIAO));
+                bitmaps[BMP_AVIAO_MASK] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(AP_BMP_AVIAO));
+                //sprite = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(LR_BMP_RATO));
+                //sprite_mask = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(LR_BMP_RATO));
+                CreateBitmapMask(bitmaps[BMP_AVIAO_MASK],RGB(255,255,255));
 
 
-                //gerar2(&lab);
-                //rato.active = TRUE;
-                //rato.speed = SPEED_HIGH;
+                inicia_fila(&fila_decolagem);
+                inicia_fila(&fila_pouso);
+
+                aviao *avi = cria_nodo_aviao();
+                sprintf(avi->nome,"Boeing");
+                sprintf(avi->codigo,"566");
+                sprintf(avi->origem,"Nevada-US");
+                sprintf(avi->destino,"Hinamizawa-JP");
+                avi->hora = 200;
+                avi->num_passageiros = 78;
+
+                push(&fila_decolagem,avi);
+
 
                 criar_botoes(hwnd, buttons);
 
@@ -99,6 +114,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
 
+            desenhar_tela(hwnd,hdc,bitmaps,fila_decolagem,fila_pouso);
 
             EndPaint(hwnd, &ps);
 

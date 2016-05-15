@@ -34,6 +34,9 @@
 		<Unit filename="aero_main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="estrutura_aero.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="f_base.h" />
 		<Unit filename="interface_aero.c">
 			<Option compilerVar="CC" />

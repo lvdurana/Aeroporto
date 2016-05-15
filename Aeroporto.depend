@@ -15,3 +15,29 @@
 1463161703 source:c:\users\levi\documents\projects\c\aeroporto\interface_aero.c
 	"f_base.h"
 
+1463291318 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\aero_main.c
+	"f_base.h"
+
+1463295153 c:\users\usuario\documents\projects\c\labirinto\aeroporto\f_base.h
+	<tchar.h>
+	<windows.h>
+	<stdio.h>
+	<math.h>
+	<time.h>
+	"resource.h"
+
+1463284193 c:\users\usuario\documents\projects\c\labirinto\aeroporto\resource.h
+
+1463295061 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\interface_aero.c
+	"f_base.h"
+
+1463291607 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\resource.rc
+	<windows.h>
+	<commctrl.h>
+	<richedit.h>
+	"resource.h"
+	"f_base.h"
+
+1463289005 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\estrutura_aero.c
+	"f_base.h"
+
