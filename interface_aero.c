@@ -21,70 +21,7 @@ int atualizar_frame(HWND hwnd, frame_count *frame){
 
 }
 
-/*int inicializar_personagem(character *rato){
-    rato->pos.x = INITIAL_POSITION_X*SIZE_CELL_X;
-    rato->pos.y = INITIAL_POSITION_Y*SIZE_CELL_Y;
-    rato->pos_map.x = 0;
-    rato->pos_map.y = 0;
-    rato->movement = 0;
-    rato->speed = SPEED_LOW;
-    rato->frame = 0;
-    rato->frame_duration = FRAME_DURATION(SPEED_LOW);
-    rato->pilha = criar_dado_pilha();
-    rato->pilha->dado = INITIAL_POSITION;
-    rato->pilha->prox = NULL;
-    rato->active = FALSE;
-
-}*/
-
-int atualizar_movimento_personagem(character *pers){
-
-    int move;
-    //Executar movimentação
-    if(pers->movement){
-        move = (pers->speed > pers->movement) ? pers->movement : pers->speed;
-        switch(pers->direction){
-        case DIRECTION_UP:
-            pers->pos.y -= move;
-            break;
-        case DIRECTION_DOWN:
-            pers->pos.y += move;
-            break;
-        case DIRECTION_RIGHT:
-            pers->pos.x += move;
-            break;
-        case DIRECTION_LEFT:
-            pers->pos.x -= move;
-            break;
-        }
-
-        pers->movement -= move;
-
-    }
-
-    //Atualizar frame
-    pers->frame_duration--;
-    if(!(pers->frame_duration)){
-        pers->frame ^= 1;
-        pers->frame_duration = FRAME_DURATION(pers->speed);
-    }
-
-}
-
-int verificar_movimentacao(character *pers){
-    if(pers->active && !pers->movement )
-        return 1;
-    return 0;
-
-}
-
-
-
-
-void desenhar_tela(HWND hwnd, HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_pouso){
-
-
-
+void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_pouso){
 
     HBITMAP hMemBitmap = CreateCompatibleBitmap(hdc, WINDOW_WIDTH, WINDOW_HEIGHT);
     HDC fundo= CreateCompatibleDC(hdc);
@@ -95,47 +32,59 @@ void desenhar_tela(HWND hwnd, HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, f
     //Desenhar fundo
     BitBlt(hdcMem, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, fundo, 0, 0, SRCCOPY);
 
-    //desenhar_caixa(hdcMem,bitmaps[BMP_CAIXA], AP_LIST_A_X, AP_LIST_A_Y, AP_LIST_WIDTH, AP_LIST_HEIGHT);
-    //desenhar_caixa(hdcMem,bitmaps[BMP_CAIXA], AP_LIST_B_X, AP_LIST_B_Y, AP_LIST_WIDTH, AP_LIST_HEIGHT);
     char *text = (char*)malloc(sizeof(char)*50);
-    sprintf(text,"Próxima decolagem");
+    sprintf(text,"Próximo pouso");
 
-    if(fila_decolagem != NULL)
-        desenhar_caixa_info(hdcMem,bitmaps,AP_LIST_A_X,AP_LIST_A_Y,AP_LIST_WIDTH,AP_LIST_HEIGHT,fila_decolagem->dado,text);
+    if(fila_pouso != NULL)
+        desenhar_caixa_info(hdcMem,bitmaps,AP_LIST_A_X,AP_LIST_A_Y,AP_LIST_WIDTH,AP_LIST_HEIGHT,fila_pouso->dado,text);
     else
         desenhar_caixa_info(hdcMem,bitmaps,AP_LIST_A_X,AP_LIST_A_Y,AP_LIST_WIDTH,AP_LIST_HEIGHT,NULL,text);
 
-    sprintf(text,"Próximo Pouso");
+    sprintf(text,"Próxima decolagem");
 
-    if(fila_pouso != NULL)
-        desenhar_caixa_info(hdcMem,bitmaps,AP_LIST_B_X,AP_LIST_B_Y,AP_LIST_WIDTH,AP_LIST_HEIGHT,fila_pouso->dado,text);
+    if(fila_decolagem != NULL)
+        desenhar_caixa_info(hdcMem,bitmaps,AP_LIST_B_X,AP_LIST_B_Y,AP_LIST_WIDTH,AP_LIST_HEIGHT,fila_decolagem->dado,text);
     else
         desenhar_caixa_info(hdcMem,bitmaps,AP_LIST_B_X,AP_LIST_B_Y,AP_LIST_WIDTH,AP_LIST_HEIGHT,NULL,text);
 
-    /*SelectObject(fundo,bitmaps[BMP_AVIAO]);
-    BitBlt(hdcMem,BOX_A_SPRITE_POSITION_X,BOX_A_SPRITE_POSITION_Y,SPRITE_AV_WIDTH,SPRITE_AV_HEIGHT,fundo,0,0,SRCAND);
-
-    SelectObject(fundo,bitmaps[BMP_AVIAO_MASK]);
-    BitBlt(hdcMem,BOX_A_SPRITE_POSITION_X,BOX_A_SPRITE_POSITION_Y,SPRITE_AV_WIDTH,SPRITE_AV_HEIGHT,fundo,0,0,SRCPAINT);*/
-
-    //escrever_info_aviao(hdcMem,AP_LIST_A_X,AP_LIST_A_Y, fila_decolagem->dado);
-
-
     BitBlt(hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY);
-
-
-
-    //SelectObject(hdcMem, hbmOld);
 
     DeleteObject(hMemBitmap);
 
     DeleteDC(fundo);
     DeleteDC(hdcMem);
+};
+
+void desenhar_lista(HDC hdc, HBITMAP *bitmaps, fila *fila_desenhar){
+
+    HBITMAP hMemBitmap = CreateCompatibleBitmap(hdc, WINDOW_WIDTH, WINDOW_HEIGHT);
+    HDC hdcMem = CreateCompatibleDC(hdc);
+    SelectObject(hdcMem, hMemBitmap);
+    fila *aux = fila_desenhar;
+    char *text = (char*)malloc(sizeof(char)*50);
+    int count = 0;
 
 
+    //Desenhar elementos da fila na tela
+    while(aux != NULL){
+        int x = (count%3)*AP_LIST_WIDTH*BOX_WIDTH;
+        int y = (count/3)*AP_LIST_HEIGHT*BOX_HEIGHT;
 
+        sprintf(text,"Avião #%d",count+1);
+        desenhar_caixa_info(hdcMem,bitmaps, x, y,AP_LIST_WIDTH,AP_LIST_HEIGHT,aux->dado,text);
+        aux = aux->prox;
+        count++;
+
+    };
+
+
+    BitBlt(hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY);
+    DeleteObject(hMemBitmap);
+    DeleteDC(hdcMem);
 
 };
+
+
 
 void escrever_info_aviao(HDC hdc, int ox, int oy, aviao *av, char *title){
 
@@ -147,6 +96,10 @@ void escrever_info_aviao(HDC hdc, int ox, int oy, aviao *av, char *title){
     desenhar_texto(hdc,title,TEXT_SIZE_A,desl_x1,desl_y,TEXT_SIZE_LIMIT_2,DT_WORDBREAK|DT_CENTER);
 
     if(av != NULL){
+        int hora = av->hora/3600;
+        int min = (av->hora%3600)/60;
+        int sec = av->hora%60;
+
         desl_y += TEXT_SIZE_A + BOX_Y_PADDING_2;
         desenhar_texto(hdc,av->nome,TEXT_SIZE_A,desl_x2,desl_y,TEXT_SIZE_LIMIT_1,DT_WORDBREAK);
 
@@ -155,10 +108,14 @@ void escrever_info_aviao(HDC hdc, int ox, int oy, aviao *av, char *title){
         desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x2,desl_y,TEXT_SIZE_LIMIT_1,DT_WORDBREAK);
 
         desl_y += TEXT_SIZE_B;
-        sprintf(text,"Saída: %d",av->hora);
+        sprintf(text,"Saída: %02d:%02d:%02d",hora,min,sec);
         desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x2,desl_y,TEXT_SIZE_LIMIT_1,DT_WORDBREAK);
 
         desl_y = oy+ BOX_Y_PADDING_1 + BOX_Y_PADDING_2 + TEXT_SIZE_A + SPRITE_AV_HEIGHT + BOX_Y_PADDING_1;
+        sprintf(text,"Origem: %s",av->origem);
+        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x1,desl_y,TEXT_SIZE_LIMIT_2,DT_WORDBREAK);
+
+        desl_y += TEXT_SIZE_B;
         sprintf(text,"Destino: %s",av->destino);
         desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x1,desl_y,TEXT_SIZE_LIMIT_2,DT_WORDBREAK);
 
@@ -202,12 +159,8 @@ void desenhar_caixa(HDC hdc, HBITMAP caixa, int ox, int oy, int width, int heigh
             BitBlt(hdc, ox+BOX_WIDTH*i, oy+BOX_HEIGHT*j, BOX_WIDTH, BOX_HEIGHT, dc_caixa, right_seg, bottom_seg, SRCCOPY);
     };
 
-    //BitBlt(hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY);
-
-    //DeleteObject(hMemBitmap);
 
     DeleteDC(dc_caixa);
-    //DeleteDC(hdcMem);
 
 
 };
@@ -264,16 +217,6 @@ void desenhar_texto(HDC hdc, char *text, int size, int pos_x, int pos_y, int lim
 
     font_old = SelectObject(hdc,font);
 
-
-    //sprintf(text,"%.*f",precision,dado);
-    /*if(dado != 0){
-
-        HWND mat_cor = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(GM_BMP_MATRIZ2));
-        HDC hdcMem = CreateCompatibleDC(hdc);
-        HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, mat_cor);
-        BitBlt(hdc, pos_x+1, pos_y, M_FIELD_WIDTH-2, M_FIELD_HEIGHT, hdcMem, 0, 0, SRCCOPY);
-    };*/
-
     SetBkMode(hdc, TRANSPARENT);
     DrawText(hdc, text, -1, &rect, modifier);
     SelectObject(hdc,font_old);
@@ -325,56 +268,32 @@ HBITMAP CreateBitmapMask(HBITMAP hbmColour, COLORREF crTransparent)
 
 void criar_botoes(HWND hwnd, HWND *buttons){
     //Estabelecer posições origem
-    int x_pos = 0;
+    int x_pos = AP_LIST_A_X - BUTTONS_WIDTH - BUTTONS_PADDING;
     int y_pos = 0;
 
 
-    buttons[PAUSE_BUTTON] = CreateWindow("BUTTON", "||",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        x_pos, y_pos, SPEED_BUTTONS_WIDTH, SPEED_BUTTONS_HEIGHT,
+    buttons[BT_PERMITIR_POUSO] = CreateWindow("BUTTON", "Permitir pouso",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        x_pos, y_pos, BUTTONS_WIDTH, BUTTONS_HEIGHT,
         hwnd, NULL, GetModuleHandle(NULL), NULL);
-    x_pos += SPEED_BUTTONS_WIDTH + SPEED_BUTTONS_PADDING;
+    x_pos -= BUTTONS_WIDTH + BUTTONS_PADDING;
 
-    buttons[SPEED_LOW_BUTTON] = CreateWindow("BUTTON", "1",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        x_pos, y_pos, SPEED_BUTTONS_WIDTH, SPEED_BUTTONS_HEIGHT,
+    buttons[BT_LISTA_POUSOS] = CreateWindow("BUTTON", "Lista de pousos",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        x_pos, y_pos, BUTTONS_WIDTH, BUTTONS_HEIGHT,
         hwnd, NULL, GetModuleHandle(NULL), NULL);
-    x_pos += SPEED_BUTTONS_WIDTH + SPEED_BUTTONS_PADDING;
+    x_pos = AP_LIST_WIDTH*BOX_WIDTH + BUTTONS_PADDING;
+    y_pos = CANVAS_HEIGHT - BUTTONS_HEIGHT;
 
-    buttons[SPEED_MID_BUTTON] = CreateWindow("BUTTON", "2",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        x_pos, y_pos, SPEED_BUTTONS_WIDTH, SPEED_BUTTONS_HEIGHT,
+    buttons[BT_PERMITIR_DECOLAGEM] = CreateWindow("BUTTON", "Permitir decolagem",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        x_pos, y_pos, BUTTONS_WIDTH, BUTTONS_HEIGHT,
         hwnd, NULL, GetModuleHandle(NULL), NULL);
-    x_pos += SPEED_BUTTONS_WIDTH + SPEED_BUTTONS_PADDING;
+    x_pos += BUTTONS_WIDTH + BUTTONS_PADDING;
 
-    buttons[SPEED_HIGH_BUTTON] = CreateWindow("BUTTON", "3",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        x_pos, y_pos, SPEED_BUTTONS_WIDTH, SPEED_BUTTONS_HEIGHT,
+    buttons[BT_LISTA_DECOLAGENS] = CreateWindow("BUTTON", "Lista de decolagens",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        x_pos, y_pos, BUTTONS_WIDTH, BUTTONS_HEIGHT,
         hwnd, NULL, GetModuleHandle(NULL), NULL);
 
 
 
 };
-
-/*int verificar_botao_pressionado(HWND hwnd, HWND pressed, labirinto *lab, character *rato, HWND *buttons){
-
-    if(pressed == buttons[PAUSE_BUTTON]){
-        rato->active = FALSE;
-    }
-    if(pressed == buttons[SPEED_LOW_BUTTON]){
-        rato->active = TRUE;
-        rato->speed = SPEED_LOW;
-    }
-    if(pressed == buttons[SPEED_MID_BUTTON]){
-        rato->active = TRUE;
-        rato->speed = SPEED_MID;
-    }
-    if(pressed == buttons[SPEED_HIGH_BUTTON]){
-        rato->active = TRUE;
-        rato->speed = SPEED_HIGH;
-    }
-    if(pressed == buttons[RESET_BUTTON]){
-        inicializar_labirinto(lab,rato,FALSE);
-    }
-
-
-
-}*/
 
 
