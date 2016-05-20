@@ -137,6 +137,7 @@ typedef struct FILA
 
 
 void inicia_fila(fila **pista);
+void liberar_lista(fila **list);
 fila *cria_nodo();
 void push(fila **pista, aviao *dado);
 aviao *pop(fila **pista);

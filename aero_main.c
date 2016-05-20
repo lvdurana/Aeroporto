@@ -72,6 +72,10 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
         DispatchMessage(&messages);
     }
 
+    liberar_lista(&fila_decolagem);
+    liberar_lista(&fila_pouso);
+
+
 };
 
 BOOL CALLBACK window_edit_proc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)

@@ -6,6 +6,21 @@ void inicia_fila(fila **pista)
     *pista = NULL;
 }
 
+void liberar_lista(fila **list){
+
+    fila *aux = *list;
+    fila *aux2;
+
+    while(aux != NULL){
+        aux2 = aux;
+        aux = aux->prox;
+        free(aux2);
+    }
+
+}
+
+
+
 fila *cria_nodo()
 {
     return (fila*)(malloc(sizeof(fila)));

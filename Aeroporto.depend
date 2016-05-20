@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1463161561 source:c:\users\levi\documents\projects\c\aeroporto\aero_main.c
+1463764676 source:c:\users\levi\documents\projects\c\aeroporto\aero_main.c
 	"f_base.h"
 
-1463161497 c:\users\levi\documents\projects\c\aeroporto\f_base.h
+1463764763 c:\users\levi\documents\projects\c\aeroporto\f_base.h
 	<tchar.h>
 	<windows.h>
 	<stdio.h>
@@ -10,9 +10,9 @@
 	<time.h>
 	"resource.h"
 
-1462816811 c:\users\levi\documents\projects\c\aeroporto\resource.h
+1463758715 c:\users\levi\documents\projects\c\aeroporto\resource.h
 
-1463161703 source:c:\users\levi\documents\projects\c\aeroporto\interface_aero.c
+1463758715 source:c:\users\levi\documents\projects\c\aeroporto\interface_aero.c
 	"f_base.h"
 
 1463725902 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\aero_main.c
@@ -39,5 +39,15 @@
 	"f_base.h"
 
 1463362238 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\estrutura_aero.c
+	"f_base.h"
+
+1463758715 source:c:\users\levi\documents\projects\c\aeroporto\resource.rc
+	<windows.h>
+	<commctrl.h>
+	<richedit.h>
+	"resource.h"
+	"f_base.h"
+
+1463766921 source:c:\users\levi\documents\projects\c\aeroporto\estrutura_aero.c
 	"f_base.h"
 
