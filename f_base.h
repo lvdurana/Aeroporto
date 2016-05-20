@@ -24,17 +24,25 @@
 #define WINDOW_WIDTH (CANVAS_WIDTH + WINDOW_PADDING_X)
 #define WINDOW_HEIGHT (CANVAS_HEIGHT + WINDOW_PADDING_Y)
 
+#define WINDOW_LIST_WIDTH 384
+#define WINDOW_LIST_HEIGHT 320
+
 
 //Bitmaps
-#define BMP_FUNDO 0
-#define BMP_CAIXA 1
-#define BMP_AVIAO 2
-#define BMP_AVIAO_MASK 3
-#define NUM_BITMAPS 4
+#define BMP_WINDOW 0 //Bitmap utilizado para o processamento dos desenhos
+#define BMP_FUNDO 1
+#define BMP_CAIXA 2
+#define BMP_AVIAO 3
+#define BMP_AVIAO_MASK 4
+#define NUM_BITMAPS 5
 
 //Sprites
-#define SPRITE_AV_WIDTH 32
+#define SPRITE_AV_FRONT_X 128
+#define SPRITE_AV_LEFT_X 0
+#define SPRITE_AV_RIGHT_X 64
+#define SPRITE_AV_WIDTH 64
 #define SPRITE_AV_HEIGHT 32
+#define SPRITE_AV_FRONT_WIDTH 32
 
 //Caixas da tela
 #define TEXT_SIZE_A 14
@@ -73,20 +81,22 @@
 #define MAX_CHARS_LOCAL 20
 
 //Especificação das direções dos sprites
-#define DIRECTION_UP 0
 #define DIRECTION_RIGHT 1
-#define DIRECTION_LEFT 2
-#define DIRECTION_DOWN 3
-#define REVERSE_DIRECTION(x) ((~x) & 3)
+#define DIRECTION_LEFT 0
+
+#define LIST_MAX_SIZE 12
+#define LIST_MAX_COLLUMNS 3
+
 
 #define FRAME_DURATION(x) (8/x)
 
-#define MAX_FPS 15
+#define MAX_FPS 30
 #define FPS_TIMER 0x0001
 
 //Constantes do aeroporto
 #define FILA_DECOLAGEM 0
 #define FILA_POUSO 1
+
 #define LOCAL_AEROPORTO "Curitiba-BR"
 
 
@@ -101,13 +111,11 @@ typedef struct frame{
 
 typedef struct cha{
     POINT pos; //em pixel
-    POINT pos_map; //em coordenadas do mapa
-    int movement; //pizels de distância do destino;
-    int direction; //direção a qual o sprite está virado
-    int speed; //pixels percorridos por frame;
-    int frame; // frame da animação do sprite
-    int frame_duration; //numero de frames restantes até a alteração do frame
+    POINT speed; //pixels percorridos por frame;
+    int direction; //direção à qual o sprite está virado
+    int animation_frame; //estado da animação
     BOOL active;
+    BOOL visible;
 
 } character;
 
@@ -137,8 +145,8 @@ int contar_elem_fila(fila *fil);
 
 int inicializar_contador_de_frames(HWND hwnd, frame_count *frame);
 int atualizar_frame(HWND hwnd, frame_count *frame);
-void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_pouso);
-void desenhar_lista(HDC hdc, HBITMAP *bitmaps, fila *fila_desenhar);
+void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_pouso, character *aviao);
+void desenhar_lista(HWND hwnd, HDC hdc, HBITMAP *bitmaps, fila *fila_desenhar);
 void escrever_info_aviao(HDC hdc, int ox, int oy, aviao *av, char *title);
 void desenhar_caixa(HDC hdc, HBITMAP caixa, int ox, int oy, int width, int height);
 void desenhar_caixa_info(HDC hdc, HBITMAP *bitmaps, int ox, int oy, int width, int height, aviao *av, char *text);

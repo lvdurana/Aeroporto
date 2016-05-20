@@ -21,7 +21,160 @@ int atualizar_frame(HWND hwnd, frame_count *frame){
 
 }
 
-void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_pouso){
+int inicializar_personagem(character *cha){
+    cha->pos.x = 0;
+    cha->pos.y = 0;
+    cha->speed.x = 0;
+    cha->speed.y = 0;
+    cha->direction = DIRECTION_RIGHT;
+    cha->animation_frame = 0;
+    cha->active = FALSE;
+    cha->visible = FALSE;
+
+}
+
+int iniciar_animacao(character *aviao){
+
+    switch(aviao->direction){
+        case DIRECTION_RIGHT:
+            aviao->pos.x = -64;
+            aviao->pos.y = 48;
+            aviao->speed.x = 2;
+            aviao->speed.y = 2;
+        break;
+        case DIRECTION_LEFT:
+            aviao->pos.x = WINDOW_WIDTH;
+            aviao->pos.y = 184;
+            aviao->speed.x = -2;
+            aviao->speed.y = 0;
+
+        break;
+    };
+    aviao->animation_frame = 0;
+    aviao->active = TRUE;
+    aviao->visible = TRUE;
+
+}
+
+int atualizar_animacao(character *aviao){
+
+    aviao->pos.x += aviao->speed.x;
+    aviao->pos.y += aviao->speed.y;
+    //printf("%d,%d\n", aviao->pos.x, aviao->pos.y);
+    aviao->animation_frame++;
+
+    //Verificr animação
+    switch(aviao->direction){
+        case DIRECTION_LEFT:
+            if(aviao->animation_frame == 90){
+                aviao->speed.x = -3;
+            }
+            else
+            if(aviao->animation_frame == 140){
+                PlaySound("airplane.wav",NULL, SND_FILENAME|SND_ASYNC);
+                aviao->speed.y = -1;
+            }
+            else
+            if(aviao->animation_frame == 150){
+                aviao->speed.y = -2;
+            }
+            else
+            if(aviao->animation_frame == 215){
+                aviao->speed.y = 0;
+                aviao->speed.x = 0;
+                aviao->active = FALSE;
+                aviao->visible = FALSE;
+                return 1;
+            }
+
+        break;
+        case DIRECTION_RIGHT:
+            if(aviao->animation_frame == 1){
+                PlaySound("airplane.wav",NULL, SND_FILENAME|SND_ASYNC);
+            }
+            else
+            if(aviao->animation_frame == 92){
+                aviao->speed.y = 0;
+                aviao->speed.x = 3;
+            }
+            else
+            if(aviao->animation_frame == 215){
+                aviao->speed.y = 0;
+                aviao->speed.x = 0;
+                aviao->active = FALSE;
+                aviao->visible = FALSE;
+                return 1;
+            }
+
+    };
+    return 0;
+
+}
+
+int adicionar_aviao_lista(HWND hwnd, fila **list, int fila_ativa){
+    aviao *av = cria_nodo_aviao();
+    char *text = (char*)malloc(sizeof(char)*10);
+    int num, hora = 0;
+
+    //Verificar nome do avião
+    GetWindowText(GetDlgItem(hwnd,NAME_BOX),av->nome,MAX_CHARS_NOME);
+
+
+    //Verificar código do avião
+    GetWindowText(GetDlgItem(hwnd,COD_BOX),av->codigo,MAX_CHARS_COD);
+
+    //Verificar origem/destino
+    if(fila_ativa == FILA_DECOLAGEM){
+        GetWindowText(GetDlgItem(hwnd,PLACE_BOX),av->destino,MAX_CHARS_LOCAL);
+        sprintf(av->origem,"%s",LOCAL_AEROPORTO);
+    }
+    else {
+        GetWindowText(GetDlgItem(hwnd,PLACE_BOX),av->origem,MAX_CHARS_LOCAL);
+        sprintf(av->destino,"%s",LOCAL_AEROPORTO);
+    }
+
+    //Verificar horário
+    GetWindowText(GetDlgItem(hwnd,HOUR_BOX),text,10);
+    num = atoi(text);
+    num = (num < 0 ? 0 : (num > 23 ? 23 : num));
+    hora = num * 3600;
+
+    GetWindowText(GetDlgItem(hwnd,MINUTES_BOX),text,10);
+    num = atoi(text);
+    num = (num < 0 ? 0 : (num > 59 ? 59 : num));
+    hora += num * 60;
+
+    GetWindowText(GetDlgItem(hwnd,SECONDS_BOX),text,10);
+    num = atoi(text);
+    num = (num < 0 ? 0 : (num > 59 ? 59 : num));
+    hora += num;
+
+    av->hora = hora;
+
+    //Verificar número de passageiros
+    GetWindowText(GetDlgItem(hwnd,PASS_BOX),text,10);
+    av->num_passageiros = atoi(text);
+
+    push(list,av);
+
+    return 1;
+
+}
+
+int verificar_botoes_permitidos(HWND *buttons, character *aviao){
+
+    if(aviao->active){
+        EnableWindow(buttons[BT_PERMITIR_DECOLAGEM],FALSE);
+        EnableWindow(buttons[BT_PERMITIR_POUSO],FALSE);
+    }
+    else{
+        EnableWindow(buttons[BT_PERMITIR_DECOLAGEM],TRUE);
+        EnableWindow(buttons[BT_PERMITIR_POUSO],TRUE);
+    }
+
+}
+
+void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_pouso, character *aviao){
 
     HBITMAP hMemBitmap = CreateCompatibleBitmap(hdc, WINDOW_WIDTH, WINDOW_HEIGHT);
     HDC fundo= CreateCompatibleDC(hdc);
@@ -32,6 +185,7 @@ void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_p
     //Desenhar fundo
     BitBlt(hdcMem, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, fundo, 0, 0, SRCCOPY);
 
+    //Desenhar caixas
     char *text = (char*)malloc(sizeof(char)*50);
     sprintf(text,"Próximo pouso");
 
@@ -47,6 +201,16 @@ void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_p
     else
         desenhar_caixa_info(hdcMem,bitmaps,AP_LIST_B_X,AP_LIST_B_Y,AP_LIST_WIDTH,AP_LIST_HEIGHT,NULL,text);
 
+
+    //Desenhar avião
+    if(aviao->visible){
+        SelectObject(fundo,bitmaps[BMP_AVIAO]);
+        BitBlt(hdcMem, aviao->pos.x, aviao->pos.y, SPRITE_AV_WIDTH, SPRITE_AV_HEIGHT, fundo, (aviao->direction)*SPRITE_AV_WIDTH, 0, SRCAND);
+        SelectObject(fundo,bitmaps[BMP_AVIAO_MASK]);
+        BitBlt(hdcMem, aviao->pos.x, aviao->pos.y, SPRITE_AV_WIDTH, SPRITE_AV_HEIGHT, fundo, (aviao->direction)*SPRITE_AV_WIDTH, 0, SRCPAINT);
+
+    };
+
     BitBlt(hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY);
 
     DeleteObject(hMemBitmap);
@@ -55,20 +219,31 @@ void desenhar_tela(HDC hdc, HBITMAP *bitmaps, fila *fila_decolagem, fila *fila_p
     DeleteDC(hdcMem);
 };
 
-void desenhar_lista(HDC hdc, HBITMAP *bitmaps, fila *fila_desenhar){
+void desenhar_lista(HWND hwnd, HDC hdc, HBITMAP *bitmaps, fila *fila_desenhar){
 
-    HBITMAP hMemBitmap = CreateCompatibleBitmap(hdc, WINDOW_WIDTH, WINDOW_HEIGHT);
+    RECT rc;
+    HBITMAP hMemBitmap = CreateCompatibleBitmap(hdc, WINDOW_WIDTH,WINDOW_HEIGHT);//rc.right, rc.bottom);
+    HBRUSH hbrBkGnd;
+
     HDC hdcMem = CreateCompatibleDC(hdc);
     SelectObject(hdcMem, hMemBitmap);
     fila *aux = fila_desenhar;
     char *text = (char*)malloc(sizeof(char)*50);
     int count = 0;
 
+    hbrBkGnd = (HBRUSH) 16;
+    rc.left = 0;
+    rc.right = WINDOW_WIDTH;
+    rc.top = 0;
+    rc.bottom = WINDOW_HEIGHT;
+
+    FillRect(hdcMem, &rc, hbrBkGnd);
+
 
     //Desenhar elementos da fila na tela
     while(aux != NULL){
-        int x = (count%3)*AP_LIST_WIDTH*BOX_WIDTH;
-        int y = (count/3)*AP_LIST_HEIGHT*BOX_HEIGHT;
+        int x = (count%LIST_MAX_COLLUMNS)*AP_LIST_WIDTH*BOX_WIDTH;
+        int y = (count/LIST_MAX_COLLUMNS)*AP_LIST_HEIGHT*BOX_HEIGHT;
 
         sprintf(text,"Avião #%d",count+1);
         desenhar_caixa_info(hdcMem,bitmaps, x, y,AP_LIST_WIDTH,AP_LIST_HEIGHT,aux->dado,text);
@@ -79,6 +254,7 @@ void desenhar_lista(HDC hdc, HBITMAP *bitmaps, fila *fila_desenhar){
 
 
     BitBlt(hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY);
+    DeleteObject(hbrBkGnd);
     DeleteObject(hMemBitmap);
     DeleteDC(hdcMem);
 
@@ -90,34 +266,35 @@ void escrever_info_aviao(HDC hdc, int ox, int oy, aviao *av, char *title){
 
     int desl_y = oy;
     int desl_x1 = ox + BOX_X_PADDING_1;
-    int desl_x2 = ox + BOX_X_PADDING_1 + SPRITE_AV_WIDTH + BOX_X_PADDING_1;
+    int desl_x2 = ox + BOX_X_PADDING_1 + SPRITE_AV_FRONT_WIDTH + BOX_X_PADDING_1;
     char *text = (char*)malloc(sizeof(char)*50);
 
     desenhar_texto(hdc,title,TEXT_SIZE_A,desl_x1,desl_y,TEXT_SIZE_LIMIT_2,DT_WORDBREAK|DT_CENTER);
 
     if(av != NULL){
+
         int hora = av->hora/3600;
         int min = (av->hora%3600)/60;
         int sec = av->hora%60;
 
         desl_y += TEXT_SIZE_A + BOX_Y_PADDING_2;
-        desenhar_texto(hdc,av->nome,TEXT_SIZE_A,desl_x2,desl_y,TEXT_SIZE_LIMIT_1,DT_WORDBREAK);
+        desenhar_texto(hdc,av->nome,TEXT_SIZE_A,desl_x2,desl_y,200,DT_WORDBREAK);
 
         desl_y += TEXT_SIZE_A;
         sprintf(text,"Cod: %s",av->codigo);
-        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x2,desl_y,TEXT_SIZE_LIMIT_1,DT_WORDBREAK);
+        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x2,desl_y,200,DT_WORDBREAK);
 
         desl_y += TEXT_SIZE_B;
         sprintf(text,"Saída: %02d:%02d:%02d",hora,min,sec);
-        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x2,desl_y,TEXT_SIZE_LIMIT_1,DT_WORDBREAK);
+        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x2,desl_y,200,DT_WORDBREAK);
 
         desl_y = oy+ BOX_Y_PADDING_1 + BOX_Y_PADDING_2 + TEXT_SIZE_A + SPRITE_AV_HEIGHT + BOX_Y_PADDING_1;
         sprintf(text,"Origem: %s",av->origem);
-        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x1,desl_y,TEXT_SIZE_LIMIT_2,DT_WORDBREAK);
+        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x1,desl_y,200,DT_WORDBREAK);
 
         desl_y += TEXT_SIZE_B;
         sprintf(text,"Destino: %s",av->destino);
-        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x1,desl_y,TEXT_SIZE_LIMIT_2,DT_WORDBREAK);
+        desenhar_texto(hdc,text,TEXT_SIZE_B,desl_x1,desl_y,200,DT_WORDBREAK);
 
         desl_y += TEXT_SIZE_B;
         sprintf(text,"Num. passageiros: %d",av->num_passageiros);
@@ -177,10 +354,10 @@ void desenhar_caixa_info(HDC hdc, HBITMAP *bitmaps, int ox, int oy, int width, i
 
     if(av != NULL){
         SelectObject(dc_aviao , bitmaps[BMP_AVIAO]);
-        BitBlt(hdc,x_aviao,y_aviao,SPRITE_AV_WIDTH,SPRITE_AV_HEIGHT,dc_aviao,0,0,SRCAND);
+        BitBlt(hdc,x_aviao,y_aviao,SPRITE_AV_FRONT_WIDTH,SPRITE_AV_HEIGHT,dc_aviao,SPRITE_AV_FRONT_X,0,SRCAND);
 
         SelectObject(dc_aviao,bitmaps[BMP_AVIAO_MASK]);
-        BitBlt(hdc,x_aviao,y_aviao,SPRITE_AV_WIDTH,SPRITE_AV_HEIGHT,dc_aviao,0,0,SRCPAINT);
+        BitBlt(hdc,x_aviao,y_aviao,SPRITE_AV_FRONT_WIDTH,SPRITE_AV_HEIGHT,dc_aviao,SPRITE_AV_FRONT_X,0,SRCPAINT);
     };
 
     escrever_info_aviao(hdc,ox,oy,av,text);

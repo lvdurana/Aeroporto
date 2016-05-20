@@ -15,9 +15,11 @@ HWND ap_edit_window = NULL;
 HBITMAP bitmaps[NUM_BITMAPS];
 HWND buttons[NUM_BUTTONS];
 
-int fila_ativa = FILA_DECOLAGEM;
 
+int fila_ativa = FILA_DECOLAGEM;
 fila *fila_decolagem, *fila_pouso;
+
+character avi_character;
 
 
 int WINAPI WinMain (HINSTANCE hThisInstance,
@@ -34,8 +36,8 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
     wincl.lpfnWndProc = WindowProcedure;
     wincl.style = CS_DBLCLKS;
     wincl.cbSize = sizeof (WNDCLASSEX);
-    wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
-    wincl.hIconSm = NULL;//(HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MYICON), IMAGE_ICON, 16, 16, 0);
+    wincl.hIcon = LoadIcon (MAKEINTRESOURCE(AP_ICON), IDI_APPLICATION);
+    wincl.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(AP_ICON), IMAGE_ICON, 16, 16, 0);
     wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
     wincl.lpszMenuName = NULL;//MAKEINTRESOURCE(IDR_MYMENU);
     wincl.cbClsExtra = 0;
@@ -76,43 +78,40 @@ BOOL CALLBACK window_edit_proc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 {
     switch(Message)
     {
+        case WM_INITDIALOG:
+            if(fila_ativa == FILA_DECOLAGEM){
+                SetWindowText (hwnd, "Nova decolagem");
+                SendDlgItemMessage(hwnd,TEXT_PLACE,WM_SETTEXT,0,"Destino");
+            }
+            else{
+                SetWindowText (hwnd, "Novo pouso");
+                SendDlgItemMessage(hwnd,TEXT_PLACE,WM_SETTEXT,0,"Origem");
+            };
+        break;
+
         case WM_COMMAND:
             switch(LOWORD(wParam))
             {
                 case ADD_BUTTON:
-                    {
-                        aviao *av = cria_nodo_aviao();
-                        char *text = (char*)malloc(sizeof(char)*10);
-                        int num;
 
-                        GetWindowText(GetDlgItem(hwnd,NAME_BOX),av->nome,MAX_CHARS_NOME);
+                    switch(fila_ativa){
+                        case FILA_DECOLAGEM:
+                            if(contar_elem_fila(fila_decolagem) < LIST_MAX_SIZE)
+                                adicionar_aviao_lista(hwnd,&fila_decolagem,FILA_DECOLAGEM);
 
-                        GetWindowText(GetDlgItem(hwnd,COD_BOX),av->codigo,MAX_CHARS_COD);
+                        break;
+                        case FILA_POUSO:
+                            if(contar_elem_fila(fila_decolagem) < LIST_MAX_SIZE)
+                                adicionar_aviao_lista(hwnd,&fila_pouso,FILA_POUSO);
 
-                        if(fila_ativa == FILA_DECOLAGEM){
-                            GetWindowText(GetDlgItem(hwnd,PLACE_BOX),av->destino,MAX_CHARS_LOCAL);
-                            sprintf(av->origem,"%s",LOCAL_AEROPORTO);
-                        }
-                        else {
-                            GetWindowText(GetDlgItem(hwnd,PLACE_BOX),av->origem,MAX_CHARS_LOCAL);
-                            sprintf(av->destino,"%s",LOCAL_AEROPORTO);
-                        }
+                        break;
+                    }
 
-                        GetWindowText(GetDlgItem(hwnd,TIME_BOX),text,10);
-                        av->hora = atoi(text);
+                    SendMessage(hwnd,WM_CLOSE,0,0);
+                    InvalidateRect(ap_active_window,NULL,1);
+                    UpdateWindow(ap_active_window);
 
-                        GetWindowText(GetDlgItem(hwnd,PASS_BOX),text,10);
-                        av->num_passageiros = atoi(text);
 
-                        if(fila_ativa == FILA_DECOLAGEM)
-                            push(&fila_decolagem,av);
-                        else
-                            push(&fila_pouso,av);
-
-                        SendMessage(hwnd,WM_CLOSE,0,0);
-                        InvalidateRect(ap_active_window,NULL,1);
-                        UpdateWindow(ap_active_window);
-                    };
                 break;
                 case IDCANCEL:
                     SendMessage(hwnd,WM_CLOSE,0,0);
@@ -134,6 +133,12 @@ BOOL CALLBACK window_list_proc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 {
     switch(Message)
     {
+        case WM_INITDIALOG:
+            if(fila_ativa == FILA_DECOLAGEM)
+                SetWindowText (hwnd, "Fila de Decolagens");
+            else
+                SetWindowText (hwnd, "Fila de Pousos");
+        break;
         case WM_COMMAND:
             switch(LOWORD(wParam))
             {
@@ -153,11 +158,11 @@ BOOL CALLBACK window_list_proc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
             char *num = (char*)malloc(sizeof(char)*10);
 
             if(fila_ativa == FILA_DECOLAGEM){
-                desenhar_lista(hdc,bitmaps,fila_decolagem);
+                desenhar_lista(hwnd, hdc,bitmaps,fila_decolagem);
                 sprintf(num,"%d",contar_elem_fila(fila_decolagem));
             }
             else{
-                desenhar_lista(hdc,bitmaps,fila_pouso);
+                desenhar_lista(hwnd, hdc,bitmaps,fila_pouso);
                 sprintf(num,"%d",contar_elem_fila(fila_pouso));
             };
             EndPaint(hwnd, &ps);
@@ -198,6 +203,10 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
                 inicia_fila(&fila_decolagem);
                 inicia_fila(&fila_pouso);
+                inicializar_personagem(&avi_character);
+
+                /*avi_character.visible = TRUE;
+                avi_character.pos.y = 100;
 
                 aviao *avi = cria_nodo_aviao();
                 sprintf(avi->nome,"Boeing");
@@ -207,7 +216,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 avi->hora = 200;
                 avi->num_passageiros = 78;
 
-                push(&fila_decolagem,avi);
+                push(&fila_pouso,avi);*/
 
 
                 criar_botoes(hwnd, buttons);
@@ -222,7 +231,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
 
-            desenhar_tela(hdc,bitmaps,fila_decolagem,fila_pouso);
+            desenhar_tela(hdc,bitmaps,fila_decolagem,fila_pouso,&avi_character);
 
             EndPaint(hwnd, &ps);
 
@@ -254,11 +263,21 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                             }
                             else
                             if(lParam == buttons[BT_PERMITIR_DECOLAGEM]){
-                                pop(&fila_decolagem);
+                                if(fila_decolagem != NULL){
+                                    avi_character.direction = DIRECTION_LEFT;
+                                    iniciar_animacao(&avi_character);
+                                    pop(&fila_decolagem);
+                                    verificar_botoes_permitidos(buttons,&avi_character);
+                                };
                             }
                             else
                             if(lParam == buttons[BT_PERMITIR_POUSO]){
-                                pop(&fila_pouso);
+                                if(fila_pouso != NULL){
+                                    avi_character.direction = DIRECTION_RIGHT;
+                                    iniciar_animacao(&avi_character);
+                                    pop(&fila_pouso);
+                                    verificar_botoes_permitidos(buttons,&avi_character);
+                                };
                             }
                         };
                         InvalidateRect(hwnd,NULL,1);
@@ -279,6 +298,9 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             switch(wParam){
 
                 case FPS_TIMER:
+                    if(avi_character.active)
+                        if(atualizar_animacao(&avi_character))
+                            verificar_botoes_permitidos(buttons,&avi_character);
                     InvalidateRect(hwnd,NULL,1);
                     UpdateWindow(hwnd);
                     atualizar_frame(hwnd, &FPS_count);

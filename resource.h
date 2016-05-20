@@ -6,6 +6,11 @@
 #define NAME_BOX  4006
 #define COD_BOX  4007
 #define PLACE_BOX  4008
-#define TIME_BOX  4009
+
 #define PASS_BOX  4010
 #define TEXT_NUM_DE_AVIOES  4002
+#define HOUR_BOX  4009
+#define MINUTES_BOX  4012
+#define SECONDS_BOX  4014
+#define TEXT_PLACE  4003
+#define AP_ICON  8001

@@ -15,10 +15,10 @@
 1463161703 source:c:\users\levi\documents\projects\c\aeroporto\interface_aero.c
 	"f_base.h"
 
-1463361348 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\aero_main.c
+1463725902 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\aero_main.c
 	"f_base.h"
 
-1463362434 c:\users\usuario\documents\projects\c\labirinto\aeroporto\f_base.h
+1463726698 c:\users\usuario\documents\projects\c\labirinto\aeroporto\f_base.h
 	<tchar.h>
 	<windows.h>
 	<stdio.h>
@@ -26,12 +26,12 @@
 	<time.h>
 	"resource.h"
 
-1463295697 c:\users\usuario\documents\projects\c\labirinto\aeroporto\resource.h
+1463727004 c:\users\usuario\documents\projects\c\labirinto\aeroporto\resource.h
 
-1463362069 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\interface_aero.c
+1463726807 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\interface_aero.c
 	"f_base.h"
 
-1463361698 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\resource.rc
+1463727004 source:c:\users\usuario\documents\projects\c\labirinto\aeroporto\resource.rc
 	<windows.h>
 	<commctrl.h>
 	<richedit.h>
